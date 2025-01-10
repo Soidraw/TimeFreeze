@@ -54,20 +54,22 @@ jobs:
         name: artifacts
         path: build/libs/*.jar
   release:
-    needs: build
+    needs: build  # 该任务依赖于 'build' 任务的成功完成
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
-    - name: Create Release Tag
+    - name: Create GitHub Release Tag
       run: |
-        TAG_NAME="v1.0.0"  # Automatically use the run number as version (can be customized)
+        TAG_NAME="v1.0.0"
+        git config user.name "Soidraw"
+        git config user.email "actions@github.com"
         git tag $TAG_NAME
-        git push origin $TAG_NAME
+        git push https://github.com/${{ github.repository }} $TAG_NAME
 
-    - name: Upload to Release
+    - name: Upload JAR to GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         files: ./build/libs/*.jar
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
