@@ -1,0 +1,94 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'adoptopenjdk'
+
+    - name: Validate gradlew integrity
+      uses: gradle/wrapper-validation-action@v2
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties', '**/build.gradle') }}
+
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build
+
+    - name: Check language files (if applicable)
+      run: ./scripts/check_lang.sh
+
+    - name: Calculate artifact names
+      id: calculate_artifact_names
+      run: |
+        SNAPSHOT_SUFFIX=${{ !startsWith(github.ref, 'refs/tags/release-') && '-SNAPSHOT' || '' }}
+        MC=$(awk -F '=' '/minecraft_version/ { print $2; }' gradle.properties)
+        BUILD=$(awk -F '=' '/build_number/ { print $2; }' gradle.properties)
+        echo "forge=build/libs/TimeFreeze-${MC}-${BUILD}-FORGE${SNAPSHOT_SUFFIX}.jar" >> "$GITHUB_OUTPUT"
+        echo "server=build/libs/TimeFreeze-${MC}-${BUILD}-SERVER${SNAPSHOT_SUFFIX}.jar" >> "$GITHUB_OUTPUT"
+        
+    - name: Build the mod jar
+      run: ./gradlew build
+
+    - name: Run tests (if applicable)
+      run: ./gradlew test
+
+    - name: Stop Gradle Daemon
+      run: ./gradlew --stop
+
+    - name: Sign jars
+      env:
+        SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+      if: ${{ env.SIGNING_KEY != '' }}
+      run: |
+        echo "${SIGNING_KEY}" | gpg --import -
+        gpg --local-user "Violet Moon Signing Key" --armor \
+          --detach-sign ${{ steps.calculate_artifact_names.outputs.forge }}
+        gpg --local-user "Violet Moon Signing Key" --armor \
+          --detach-sign ${{ steps.calculate_artifact_names.outputs.server }}
+        
+    - name: Archive Forge Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Forge
+        path: |
+          ${{ steps.calculate_artifact_names.outputs.forge }}
+          ${{ steps.calculate_artifact_names.outputs.forge }}.asc
+
+    - name: Archive Server Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Server
+        path: |
+          ${{ steps.calculate_artifact_names.outputs.server }}
+          ${{ steps.calculate_artifact_names.outputs.server }}.asc
+
+    - name: Upload to Releases (if release)
+      if: startsWith(github.ref, 'refs/tags/release-')
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        FORGE_JAR: ${{ steps.calculate_artifact_names.outputs.forge }}
+        SERVER_JAR: ${{ steps.calculate_artifact_names.outputs.server }}
+      run: |
+        scripts/upload_releases.sh
