@@ -54,16 +54,14 @@ jobs:
         name: artifacts
         path: build/libs/*.jar
   release:
-    needs: build  # 该任务依赖于 'build' 任务的成功完成
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Upload JAR to GitHub Release
-      uses: ghcr.io/actions/upload-release-asset@v1
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        release_id: ${{ github.event.release.id }}
-        asset_path: ./build/libs/*.jar
-        asset_name: TimeFreeze.jar
-        asset_content_type: application/java-archive
+        files: ./build/libs/*.jar
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
