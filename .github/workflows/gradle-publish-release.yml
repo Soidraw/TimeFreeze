@@ -64,8 +64,9 @@ jobs:
         TAG_NAME="v1.0.0"
         git config user.name "Soidraw"
         git config user.email "actions@github.com"
+        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/Soidraw/TimeFreeze.git
         git tag $TAG_NAME
-        git push https://github.com/${{ github.repository }} $TAG_NAME
+        git push origin $TAG_NAME
 
     - name: Upload JAR to GitHub Release
       uses: softprops/action-gh-release@v1
