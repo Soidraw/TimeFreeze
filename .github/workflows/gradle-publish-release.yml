@@ -48,8 +48,8 @@ jobs:
     - name: Stop Gradle Daemon
       run: ./gradlew --stop
 
-    - name: update
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: "timefreeze_forge_1_12_2"
-        path: build/libs/
+        name: build-artifacts
+        path: build/libs/*.jar
