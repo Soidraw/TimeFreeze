@@ -6,36 +6,32 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # 你可以根据需要更换为 `ubuntu-latest` 或 `macos-latest`
+    runs-on: windows-latest
 
     permissions:
-      contents: read    # 需要读取内容权限
-      packages: write   # 需要写入权限来发布到 GitHub Packages
+      contents: read
+      packages: write
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Set up Java 8 environment for Gradle
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
         java-version: '8'
         distribution: 'adoptopenjdk'
-        server-id: github  # Maven repository id for GitHub Packages
-        settings-path: ${{ github.workspace }}  # Settings.xml file location for Gradle configuration
+        server-id: github
+        settings-path: ${{ github.workspace }}
 
-    # Setup Gradle wrapper
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4 # 使用最新版本的 Gradle 插件
+      uses: gradle/actions/setup-gradle@v4
 
-    # Build with Gradle
-    - name: Build with Gradle
-      run: ./gradlew build
+    - name: Clean and Build with Gradle
+      run: ./gradlew clean build --stacktrace --info
 
-    # Publish the build artifact to GitHub Packages
     - name: Publish to GitHub Packages
       run: ./gradlew publish
       env:
-        USERNAME: ${{ github.actor }}        # 使用 GitHub 用户名
-        TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 使用 GitHub Token 作为认证
+        USERNAME: ${{ github.actor }}
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
