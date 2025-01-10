@@ -51,5 +51,5 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts
-        path: build/libs/*.jar
+        name: TimeFreeze-1.0.jar
+        path: build/libs/TimeFreeze-1.0.jar
