@@ -1,0 +1,16 @@
+[
+	{
+		"modid": "timefreeze",
+		"name": "TimeFreeze mod",
+		"description": "Automatically freeze server world time when there is no player in server.",
+		"version": "${version}",
+		"mcversion": "1.12.2",
+		"url": "",
+		"updateUrl": "",
+		"authorList": ["Soidraw"],
+		"credits": "",
+		"logoFile": "",
+		"screenshots": [],
+		"dependencies": []
+	}
+]
