@@ -24,7 +24,7 @@ public class logout {
             if (server != null) {
                 scheduler.schedule(() -> {
                     if (server.getPlayerList().getPlayers().isEmpty()) {
-                        TimeFreeze.LOGGER.info("Player logged out: " + player.getName());
+                        TimeFreeze.LOGGER.info("Player logged out: {}", player.getName());
                         freezeServer(server);
                     }
                 }, 10, TimeUnit.SECONDS);
@@ -36,7 +36,7 @@ public class logout {
         synchronized (server) {
             World world = server.getWorld(0);
             long worldTime = world.getWorldTime();
-            TimeFreeze.LOGGER.info("World time when frozen: " + worldTime + " ticks");
+            TimeFreeze.LOGGER.info("World time when frozen: {} ticks", worldTime);
             ServerCommandManager commandManager = server.createCommandManager();
             server.getPlayerList().sendMessage(new TextComponentString("You shouldn't read this in client!"));
             commandManager.executeCommand(server, "gamerule doDaylightCycle false");

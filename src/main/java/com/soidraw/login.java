@@ -16,10 +16,10 @@ public class login {
             MinecraftServer server = player.getServer();
             if (server != null && server.getPlayerList().getPlayers().size() == 1) {
                 synchronized (server) {
-                    TimeFreeze.LOGGER.info("The first player logged in: " + player.getName());
+                    TimeFreeze.LOGGER.info("The first player logged in: {}", player.getName());
                     World world = server.getWorld(0);
                     long worldTime = world.getWorldTime();
-                    TimeFreeze.LOGGER.info("World time when unfrozen: " + worldTime + " ticks");
+                    TimeFreeze.LOGGER.info("World time when unfrozen: {} ticks", worldTime);
                     ServerCommandManager commandManager = server.createCommandManager();
                     commandManager.executeCommand(server, "gamerule doDaylightCycle true");
                     commandManager.executeCommand(server, "gamerule doWeatherCycle true");

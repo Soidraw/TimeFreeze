@@ -52,12 +52,15 @@ public class TimeFreeze {
 		if(server.getPlayerList().getPlayers().isEmpty()){
 			World world = server.getWorld(0);
 			long worldTime = world.getWorldTime();
-			LOGGER.info("Server is empty and is freezing at " + worldTime + " ticks.");
+            LOGGER.info("Server is empty and is freezing at {} ticks.", worldTime);
 			ServerCommandManager commandManager = server.createCommandManager();
 			commandManager.executeCommand(server, "gamerule doDaylightCycle false");
 			commandManager.executeCommand(server, "gamerule doWeatherCycle false");
 		} else{
 			server.getPlayerList().sendMessage(new TextComponentString("You shouldn't read this in client!"));
+		}
+		if(server.worlds.length != 1){
+            LOGGER.warn("This server has {} worlds, please check time freeze function", server.worlds.length);
 		}
 	}
 }
