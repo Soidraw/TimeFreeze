@@ -1,0 +1,76 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+
+    - name: Validate gradlew integrity
+      uses: gradle/wrapper-validation-action@v2
+
+    - name: Set executable permissions for gradlew
+      run: chmod +x ./gradlew
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties', '**/build.gradle') }}
+
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build
+
+    - name: Build the mod jar
+      run: ./gradlew build
+
+    - name: Run tests (if applicable)
+      run: ./gradlew test
+
+    - name: Stop Gradle Daemon
+      run: ./gradlew --stop
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifacts
+        path: build/libs/*.jar
+  release:
+    needs: build  # 该任务依赖于 'build' 任务的成功完成
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Create GitHub Release Tag
+      run: |
+        TAG_NAME="v1.0.0"
+        git config user.name "Soidraw"
+        git config user.email "actions@github.com"
+        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/Soidraw/TimeFreeze.git
+        git tag $TAG_NAME
+        git push origin $TAG_NAME
+
+    - name: Upload JAR to GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./build/libs/*.jar
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
